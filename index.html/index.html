@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alerta Robo Auto / Moto</title>
+
+  <!-- Leaflet (mapa GRATIS, sin API key) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      text-align: center;
+      background: #b00020;
+      color: white;
+      padding: 15px;
+      margin: 0;
+    }
+    .container {
+      padding: 15px;
+    }
+    input, button {
+      width: 100%;
+      font-size: 20px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    button {
+      background: #b00020;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #map {
+      height: 300px;
+      margin-top: 10px;
+    }
+    .ok {
+      background: green;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🚨 ALERTA ROBO VEHICULAR</h1>
+
+<div class="container">
+
+  <select id="tipo" style="width:100%;font-size:20px;padding:10px;margin-bottom:10px;">
+    <option value="">Seleccionar tipo de vehículo</option>
+    <option value="Auto">Auto</option>
+    <option value="Moto">Moto</option>
+  </select>
+
+  <input id="patente" placeholder="Patente">
+  <input id="vehiculo" placeholder="Marca / Modelo">
+  <input id="datos" placeholder="datos">
+
+  <input type="file" id="foto" accept="image/*">
+
+  <div id="map"></div>
+
+  <button onclick="enviarAlerta()">ENVIAR ALERTA DE ROBO</button>
+
+</div>
+
+<script>
+  // ================= MAPA + GEOLOCALIZACIÓN =================
+  let lat = null;
+  let lng = null;
+
+  const map = L.map('map').setView([-35, -58], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      lat = pos.coords.latitude;
+      lng = pos.coords.longitude;
+
+      map.setView([lat, lng], 16);
+      L.marker([lat, lng]).addTo(map).bindPopup('Ubicación del robo').openPopup();
+    });
+  }
+
+  // ================= ENVÍO ALERTA =================
+  function enviarAlerta() {
+    const tipo = document.getElementById('tipo').value;
+    const patente = document.getElementById('patente').value;
+    const vehiculo = document.getElementById('vehiculo').value;
+    const color = document.getElementById('datos').value;
+    const foto = document.getElementById('foto').files[0];
+
+    if (!tipo || !patente || !vehiculo || !datos) {
+      alert('Completá todos los datos');
+      return;
+    }
+
+    let texto = `🚨 ALERTA ROBO ${tipo.toUpperCase()}\n\n` +
+                `Tipo: ${tipo}\nPatente: ${patente}\n` +
+                `Vehículo: ${vehiculo}\n` +
+                `datos: ${datos}\n`;
+
+    if (lat && lng) {
+      texto += `\nUbicación: https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=18/${lat}/${lng}`;
+    }
+
+    texto += `\n\nIMPORTANTE: la foto del vehículo debe adjuntarse manualmente en el mail.`;
+
+    const mail = `mailto:lukasa1108@gmail.com?subject=ALERTA%20ROBO%20VEHÍCULO&body=${encodeURIComponent(texto)}`;
+
+    window.location.href = mail;
+  }
+</script>
+
+</body>
+</html>
